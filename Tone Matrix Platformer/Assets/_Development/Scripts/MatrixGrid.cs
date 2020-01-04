@@ -4,12 +4,11 @@ using UnityEngine;
 
 public class MatrixGrid : MonoBehaviour
 {
-	public NoteBlock[] noteBlocks;
+	[SerializeField] private NoteBlock noteBlockPrefab;
+	[SerializeField] private Scale scale;
 	private NoteBlock[,] noteBlockMatrix;
 	private int numNoteBlocks;
-
 	[SerializeField] private float noteBlockPadding = 0.4f;
-
 	[SerializeField] private int _BPM = 90;
 
 	int currentColToPlay = 0;
@@ -17,7 +16,7 @@ public class MatrixGrid : MonoBehaviour
 
     void Start()
     {
-		numNoteBlocks = noteBlocks.Length;
+		numNoteBlocks = scale.notes.Length;
 
 		CreateMatrix();		
     }
@@ -31,7 +30,8 @@ public class MatrixGrid : MonoBehaviour
 
 		for (int x = 0; x < numNoteBlocks; ++x) {
 			for (int y = 0; y < numNoteBlocks; ++y) {
-				noteBlockMatrix[x, y] = Instantiate(noteBlocks[y], blockSpawnPosition, Quaternion.identity);
+				noteBlockMatrix[x, y] = Instantiate(noteBlockPrefab, blockSpawnPosition, Quaternion.identity, this.gameObject.transform);
+				noteBlockMatrix[x, y].SetNote(scale.notes[y]);
 				blockSpawnPosition.y += (1.0f + noteBlockPadding);
 			}
 			blockSpawnPosition.x += (1.0f + noteBlockPadding);
@@ -41,7 +41,7 @@ public class MatrixGrid : MonoBehaviour
 
     void Update()
     {
-		if (timeBetweenBeatsCounter < (60.0f / _BPM)) {
+		if (timeBetweenBeatsCounter < ((60.0f / _BPM) / 4.0f)) {
 			timeBetweenBeatsCounter += Time.deltaTime;
 		}
 		else {
