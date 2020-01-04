@@ -14,7 +14,7 @@ TagManager:
   - 
   - 
   - PostProcessing
-  - 
+  - Background
   - 
   - 
   - 
@@ -40,4 +40,16 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 1848661757
+    locked: 0
+  - name: NoteBlocks
+    uniqueID: 4221993233
+    locked: 0
+  - name: NoteBlock_Enabled
+    uniqueID: 1715885351
+    locked: 0
+  - name: NoteBlock_Disabled
+    uniqueID: 2441106977
     locked: 0
