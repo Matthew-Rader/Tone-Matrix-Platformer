@@ -23,8 +23,10 @@ public class MatrixGrid : MonoBehaviour
 
 	void CreateMatrix () {
 		noteBlockMatrix = new NoteBlock[numNoteBlocks, numNoteBlocks];
+		float offset = (float)numNoteBlocks / 2.0f;
+		offset = numNoteBlocks % 2 == 0 ? offset - 0.5f : offset;
 
-		float startSpwnOffset = 0 - (numNoteBlocks / 2) - (noteBlockPadding * (numNoteBlocks / 2));
+		float startSpwnOffset = 0 - (offset) - (noteBlockPadding * (offset));
 
 		Vector3 blockSpawnPosition = new Vector3(startSpwnOffset, startSpwnOffset, 0.0f);
 
@@ -54,7 +56,6 @@ public class MatrixGrid : MonoBehaviour
 	void PlayEnabledBlocksInCol (int col) {
 		for (int i = 0; i < numNoteBlocks; ++i) {
 			if (noteBlockMatrix[col, i].blockEnabled) {
-				Debug.Log(i);
 				noteBlockMatrix[col, i].PlayAudio();
 			}
 		}

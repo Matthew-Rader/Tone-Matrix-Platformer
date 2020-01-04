@@ -15,9 +15,9 @@ TagManager:
   - 
   - PostProcessing
   - Background
-  - 
-  - 
-  - 
+  - NoteBlock_Enabled
+  - NoteBlock_Disabled
+  - Hazard
   - 
   - 
   - 
@@ -52,4 +52,10 @@ TagManager:
     locked: 0
   - name: NoteBlock_Disabled
     uniqueID: 2441106977
+    locked: 0
+  - name: Player
+    uniqueID: 4262881961
+    locked: 0
+  - name: Hazard
+    uniqueID: 713974571
     locked: 0
