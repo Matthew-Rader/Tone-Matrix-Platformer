@@ -76,6 +76,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectableBlockCount: {fileID: 11400000, guid: c851425550401c549b94510663c5da73,
     type: 2}
+  mouseDownState: {fileID: 11400000, guid: 224652f38fe8c1c4082b7df3eaa6c61d, type: 2}
   blockEnabled: 0
 --- !u!82 &2612803970045861470
 AudioSource:

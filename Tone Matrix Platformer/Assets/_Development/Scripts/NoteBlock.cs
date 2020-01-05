@@ -12,6 +12,7 @@ public class NoteBlock : MonoBehaviour
 	private SpriteRenderer spriteRenderer;
 	private Light2D _light;
 	[SerializeField] private SelectableBlockCount selectableBlockCount;
+	[SerializeField] private MouseDownState mouseDownState;
 
 	// Potential Note-Block colors
 	private Color nodeBlockEnabled = new Color(218.0f/255.0f, 218.0f/255.0f, 218.0f/255.0f, 1.0f);
@@ -42,27 +43,47 @@ public class NoteBlock : MonoBehaviour
 		if (Input.GetMouseButtonDown(0)) {
 			// Enabled the block
 			if (!blockEnabled && selectableBlockCount.CurrentSelectCountLessThanMax()) {
-				blockEnabled = true;
-				spriteRenderer.color = nodeBlockEnabled;
-				spriteRenderer.sortingLayerName = _SortingLayerEnabled;
-				gameObject.layer = LayerMask.NameToLayer(_SortingLayerEnabled);
-
-				selectableBlockCount.currentSelectedCount += 1;
+				EnableNoteBlock();
+				mouseDownState.SetState(MouseDownState.State.Enable);
 			}
 			// Disable the block
 			else if (blockEnabled) {
-				blockEnabled = false;
-
-				if (_spriteColorEffect != null)
-					StopCoroutine(_spriteColorEffect);
-
-				spriteRenderer.color = nodeBlockDisabled;
-				spriteRenderer.sortingLayerName = _SortingLayerDisabled;
-				gameObject.layer = LayerMask.NameToLayer(_SortingLayerDisabled);
-
-				selectableBlockCount.currentSelectedCount -= 1;
+				DisableNoteBlock();
+				mouseDownState.SetState(MouseDownState.State.Disable);
 			}
 		}
+		else if (Input.GetMouseButton(0)) {
+			// Enabled the block
+			if (!blockEnabled && selectableBlockCount.CurrentSelectCountLessThanMax() && mouseDownState.ShouldEnable()) {
+				EnableNoteBlock();
+			}
+			// Disable the block
+			else if (blockEnabled && !mouseDownState.ShouldEnable()) {
+				DisableNoteBlock();
+			}
+		}
+	}
+
+	void EnableNoteBlock () {
+		blockEnabled = true;
+		spriteRenderer.color = nodeBlockEnabled;
+		spriteRenderer.sortingLayerName = _SortingLayerEnabled;
+		gameObject.layer = LayerMask.NameToLayer(_SortingLayerEnabled);
+
+		selectableBlockCount.currentSelectedCount += 1;
+	}
+
+	void DisableNoteBlock () {
+		blockEnabled = false;
+
+		if (_spriteColorEffect != null)
+			StopCoroutine(_spriteColorEffect);
+
+		spriteRenderer.color = nodeBlockDisabled;
+		spriteRenderer.sortingLayerName = _SortingLayerDisabled;
+		gameObject.layer = LayerMask.NameToLayer(_SortingLayerDisabled);
+
+		selectableBlockCount.currentSelectedCount -= 1;
 	}
 
 	public void PlayAudio () {
