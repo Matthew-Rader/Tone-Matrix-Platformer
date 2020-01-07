@@ -6,6 +6,7 @@ public class MatrixGrid : MonoBehaviour
 {
 	[SerializeField] private NoteBlock noteBlockPrefab;
 	[SerializeField] private Scale scale;
+	[SerializeField] private SelectableBlockCount selectableBlockCount;
 	private NoteBlock[,] noteBlockMatrix;
 	private int numNoteBlocks;
 	[SerializeField] private float noteBlockPadding = 0.4f;
@@ -34,6 +35,7 @@ public class MatrixGrid : MonoBehaviour
 			for (int y = 0; y < numNoteBlocks; ++y) {
 				noteBlockMatrix[x, y] = Instantiate(noteBlockPrefab, blockSpawnPosition, Quaternion.identity, this.gameObject.transform);
 				noteBlockMatrix[x, y].SetNote(scale.notes[y]);
+				noteBlockMatrix[x, y].SetSelectableBlockCount(selectableBlockCount);
 				blockSpawnPosition.y += (1.0f + noteBlockPadding);
 			}
 			blockSpawnPosition.x += (1.0f + noteBlockPadding);
@@ -55,7 +57,7 @@ public class MatrixGrid : MonoBehaviour
 
 	void PlayEnabledBlocksInCol (int col) {
 		for (int i = 0; i < numNoteBlocks; ++i) {
-			if (noteBlockMatrix[col, i].blockEnabled) {
+			if (noteBlockMatrix[col, i].IsBlockEnabled()) {
 				noteBlockMatrix[col, i].PlayAudio();
 			}
 		}

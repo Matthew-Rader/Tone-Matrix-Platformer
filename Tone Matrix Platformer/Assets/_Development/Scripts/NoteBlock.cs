@@ -8,10 +8,12 @@ public class NoteBlock : MonoBehaviour
 	const string _SortingLayerDisabled = "NoteBlock_Disabled";
 	const string _SortingLayerEnabled = "NoteBlock_Enabled";
 
+	[SerializeField] private bool freePlay = false;
+
 	private AudioSource noteAudio;
 	private SpriteRenderer spriteRenderer;
 	private Light2D _light;
-	[SerializeField] private SelectableBlockCount selectableBlockCount;
+	private SelectableBlockCount selectableBlockCount;
 	[SerializeField] private MouseDownState mouseDownState;
 
 	// Potential Note-Block colors
@@ -19,8 +21,7 @@ public class NoteBlock : MonoBehaviour
 	private Color nodeBlockPlaying = Color.white;
 	private Color nodeBlockDisabled = new Color(35.0f/255.0f, 35.0f/255.0f, 35.0f/255.0f, 1.0f);
 
-	[HideInInspector]
-	public bool blockEnabled = false;
+	private bool blockEnabled;
 
 	private Coroutine _lightFadeEffect;
 	private Coroutine _spriteColorEffect;
@@ -33,6 +34,8 @@ public class NoteBlock : MonoBehaviour
 		spriteRenderer.color = nodeBlockDisabled;
 		spriteRenderer.sortingLayerName = _SortingLayerDisabled;
 
+		blockEnabled = false;
+
 		gameObject.layer = LayerMask.NameToLayer(_SortingLayerDisabled);
 
 		_light.enabled = true;
@@ -42,7 +45,8 @@ public class NoteBlock : MonoBehaviour
 	void OnMouseOver () {
 		if (Input.GetMouseButtonDown(0)) {
 			// Enabled the block
-			if (!blockEnabled && selectableBlockCount.CurrentSelectCountLessThanMax()) {
+			if (!blockEnabled && 
+				(selectableBlockCount.CurrentSelectCountLessThanMax() || freePlay)) {
 				EnableNoteBlock();
 				mouseDownState.SetState(MouseDownState.State.Enable);
 			}
@@ -54,7 +58,9 @@ public class NoteBlock : MonoBehaviour
 		}
 		else if (Input.GetMouseButton(0)) {
 			// Enabled the block
-			if (!blockEnabled && selectableBlockCount.CurrentSelectCountLessThanMax() && mouseDownState.ShouldEnable()) {
+			if (!blockEnabled && 
+				(selectableBlockCount.CurrentSelectCountLessThanMax() || freePlay) && 
+				mouseDownState.ShouldEnable()) {
 				EnableNoteBlock();
 			}
 			// Disable the block
@@ -70,7 +76,9 @@ public class NoteBlock : MonoBehaviour
 		spriteRenderer.sortingLayerName = _SortingLayerEnabled;
 		gameObject.layer = LayerMask.NameToLayer(_SortingLayerEnabled);
 
-		selectableBlockCount.currentSelectedCount += 1;
+		if (!freePlay) {
+			selectableBlockCount.currentSelectedCount += 1;
+		}
 	}
 
 	void DisableNoteBlock () {
@@ -83,7 +91,9 @@ public class NoteBlock : MonoBehaviour
 		spriteRenderer.sortingLayerName = _SortingLayerDisabled;
 		gameObject.layer = LayerMask.NameToLayer(_SortingLayerDisabled);
 
-		selectableBlockCount.currentSelectedCount -= 1;
+		if (!freePlay) {
+			selectableBlockCount.currentSelectedCount -= 1;
+		}
 	}
 
 	public void PlayAudio () {
@@ -96,6 +106,14 @@ public class NoteBlock : MonoBehaviour
 
 	public void SetNote (AudioClip inClip) {
 		noteAudio.clip = inClip;
+	}
+
+	public void SetSelectableBlockCount (SelectableBlockCount blockCount) {
+		selectableBlockCount = blockCount;
+	}
+
+	public bool IsBlockEnabled () {
+		return blockEnabled;
 	}
 
 	IEnumerator LightFadeEffect () {
