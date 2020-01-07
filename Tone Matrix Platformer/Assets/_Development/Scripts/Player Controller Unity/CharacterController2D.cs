@@ -17,13 +17,14 @@ public class CharacterController2D : MonoBehaviour
 	private float moveY;
 	private float maxJumpVelocity;
 	private float minJumpVelocity;
-	private bool jumpInput = false;
+	private bool jumpInputDown = false;
 	private bool jumpInputUp = false;
 	private bool jumping = false;
 	private bool grabWall = false;
 	private bool applyWallSlide = true;
 	private bool canMove = true;
 	private float _DefaultGravityMultiplier;
+	private bool applyJumpQueue = false;
 
 	// SERIALIZED PRIVATE -----------------------------------------------------
 	[SerializeField] private GameManager gameManager;
@@ -40,17 +41,16 @@ public class CharacterController2D : MonoBehaviour
 	[SerializeField] private float maxJumpHeight = 2.25f;
 	[SerializeField] private float minJumpHeight = 1.0f;
 	[SerializeField] private float timeToJumpApex = 0.25f;
+	[SerializeField] private float jumpQueueTimer = 0.15f;
+	[SerializeField] private float coyoteJumpTimer = 1.0f;
 
 
-	[SerializeField] private float standardJumpForce = 15f;
 	[SerializeField] private float wallJumpForce = 13f;
 	[SerializeField] private float wallJumpVerticalControlDelay = 0.1f;
 	[SerializeField] private float wallJumpAwayControlDelay = 0.15f;
 	[Tooltip("0 will result in a vertical jump and 1 ~45*")]
 	[Range (0, 1)] [SerializeField] private float wallJumpAwayAngleModifier = 0.5f;
-	[SerializeField] private float jumpOffLedgeDelay = 0.5f;
-	private float jumpOffLedgeCounter = 0.0f;
-	private bool canLedgeDelayJump = false; 
+	private bool canCoyoteJump = false; 
 
 	[Header("Better Jumping Gravity Multiplier")]
 	[SerializeField] private float fallMultiplier = 3.5f;
@@ -85,22 +85,24 @@ public class CharacterController2D : MonoBehaviour
 
 	void Update()
 	{
-		GetMovementInput();
+		if (canMove) {
+			GetInput();
+		}
 
-		JumpOffLedgeDelay();
-
-		if (Input.GetButtonDown("Jump"))
-			jumpInput = true;
+		DetermineIfCanCoyoteJump();
 
 		grabWall = Input.GetAxis("LT") == 0 ? false : true;
 
 		WallGrabStamina();
-	}
 
-	void FixedUpdate()
-	{
-		Move(moveX, moveY, jumpInput, grabWall);
-		jumpInput = false;
+		if (jumpInputDown ||
+			(applyJumpQueue && (playerColl.collInfo.onGround || ((playerColl.collInfo.onWallLeft || playerColl.collInfo.onWallRight) && !playerColl.collInfo.onGround)))) {
+			HandleJump();
+		}
+
+		Move(moveX, moveY, jumpInputDown, grabWall);
+
+		ApplyGravityScale(grabWall);
 	}
 
 	public void Move (float x, float y, bool jump, bool grabWall)
@@ -136,12 +138,6 @@ public class CharacterController2D : MonoBehaviour
 		}
 
 		HandlePlayerSpriteFlip(x, y);
-
-		// If the player should jump
-		if (jump)
-			HandleJump();
-
-		ApplyGravityScale(grabWall);
 	}
 
 	// Affect gravity scale for better jumping
@@ -167,37 +163,35 @@ public class CharacterController2D : MonoBehaviour
 	private void HandleJump()
 	{
 		// Standard ground jump
-		if (playerColl.collInfo.onGround)
-		{
+		if (playerColl.collInfo.onGround) {
 			playerColl.collInfo.onGround = false;
 			DoJump(Vector2.up, maxJumpVelocity);
 		}
 		// Coyote Jump
-		else if (canLedgeDelayJump)
-		{
+		else if (canCoyoteJump) {
 			DoJump(Vector2.up, maxJumpVelocity);
 		}
 		// Some sort of wall jump
-		else if (playerColl.collInfo.onWall && !playerColl.collInfo.onGround)
-		{
+		else if (playerColl.collInfo.onWall && !playerColl.collInfo.onGround) {
 			// Vertical jump up a wall
-			if (grabWall && !wallGrabDepleted && (moveX == 0 || (moveX < 0f && playerColl.collInfo.onWallLeft) || (moveX > 0f && playerColl.collInfo.onWallRight)))
-			{
+			if (grabWall && !wallGrabDepleted && (moveX == 0 || (moveX < 0f && playerColl.collInfo.onWallLeft) || (moveX > 0f && playerColl.collInfo.onWallRight))) {
 				StopCoroutine(DisableMovementWallJumpUp(0));
 				StartCoroutine(DisableMovementWallJumpUp(wallJumpVerticalControlDelay));
 
 				DoJump(Vector2.up, wallJumpForce);
 			}
 			// Jump away from a wall
-			else
-			{
+			else {
 				StopCoroutine(DisableMovementWallJumpOff(0));
 				StartCoroutine(DisableMovementWallJumpOff(wallJumpAwayControlDelay));
 
 				//wallSide is -1 for left and 1 for right
-				Vector2 wallDir = playerColl.collInfo.onWallRight ? Vector2.left : Vector2.right; 
+				Vector2 wallDir = playerColl.collInfo.onWallRight ? Vector2.left : Vector2.right;
 				DoJump((Vector2.up + wallDir * wallJumpAwayAngleModifier), wallJumpForce);
 			}
+		}
+		else if (!applyJumpQueue) {
+			StartCoroutine(JumpQueueTimer(jumpQueueTimer));
 		}
 	}
 
@@ -264,7 +258,7 @@ public class CharacterController2D : MonoBehaviour
 		}
 	}
 
-	private void GetMovementInput()
+	private void GetInput()
 	{
 		Vector2 movementInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
@@ -273,23 +267,19 @@ public class CharacterController2D : MonoBehaviour
 
 		moveX = movementInput.x * runSpeed;
 		moveY = movementInput.y * runSpeed;
+
+		jumpInputDown = Input.GetButtonDown("Jump") ? true : false;
+		jumpInputUp = Input.GetButtonUp("Jump") ? true : false;
 	}
 
-	private void JumpOffLedgeDelay()
+	private void DetermineIfCanCoyoteJump()
 	{
-		if (playerColl.collInfo.onGround)
-		{
-			jumpOffLedgeCounter = 0.0f;
-			canLedgeDelayJump = true;
-			jumping = false;
+		if (!playerColl.collInfo.onGround && !playerColl.collInfo.onWall && !jumping && characterRigi.velocity.y < 0f &&
+			(Time.time <= (playerColl.collInfo.timeLeftGround + coyoteJumpTimer))) {
+			canCoyoteJump = true;
 		}
-		else if (!playerColl.collInfo.onGround && !playerColl.collInfo.onWall && !jumping && (jumpOffLedgeCounter < jumpOffLedgeDelay))
-		{
-			jumpOffLedgeCounter += Time.deltaTime;
-		}
-		else
-		{
-			canLedgeDelayJump = false;
+		else {
+			canCoyoteJump = false;
 		}
 	}
 
@@ -315,5 +305,11 @@ public class CharacterController2D : MonoBehaviour
 	public void ResetPlayer () {
 		jumping = false;
 		velocity = Vector2.zero;
+	}
+
+	IEnumerator JumpQueueTimer (float time) {
+		applyJumpQueue = true;
+		yield return new WaitForSeconds(time);
+		applyJumpQueue = false;
 	}
 }

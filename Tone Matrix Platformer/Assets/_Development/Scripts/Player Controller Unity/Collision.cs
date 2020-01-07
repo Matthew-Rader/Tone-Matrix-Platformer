@@ -9,6 +9,8 @@ public class Collision : MonoBehaviour
 {
 	public CollisionInfo collInfo;
 
+	private bool groundedLastFrame = false;
+
 	[Header("Collision Layers")]
 	[SerializeField] private LayerMask whatIsGround;
 	[SerializeField] private LayerMask whatIsWall;
@@ -40,6 +42,12 @@ public class Collision : MonoBehaviour
 
 		// Check for ground collision
 		collInfo.onGround = Physics2D.OverlapBox((Vector2)transform.position + bottomOffset, bottomOverlapBox, 0.0f, whatIsGround);
+
+		if (!collInfo.onGround && groundedLastFrame) {
+			groundedLastFrame = false;
+			collInfo.timeLeftGround = Time.time;
+		}
+		groundedLastFrame = collInfo.onGround;
 
 		if (!wasGrounded && collInfo.onGround)
 			OnLandEvent.Invoke();
@@ -77,6 +85,7 @@ public class Collision : MonoBehaviour
 		public bool onWallRight;
 		public bool touchedHazard;
 		public int wallSide;
+		public float timeLeftGround;
 
 		public void Reset () {
 			onGround = onWall = false;
