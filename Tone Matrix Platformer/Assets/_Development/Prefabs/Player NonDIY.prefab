@@ -186,25 +186,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
-  runSpeed: 9
+  runSpeed: 11.5
   accelerationTimeAirborne: 0.1
   decelerationTimeAirborne: 0.1
   accelerationTimeGrounded: 0.12
   decelerationTimeGrounded: 0.03
   controllerDeadZone: 0.25
-  maxJumpHeight: 2.25
+  maxJumpHeight: 5
   minJumpHeight: 1
   timeToJumpApex: 0.25
-  standardJumpForce: 15
-  wallJumpForce: 13
+  fallMultiplier: 11
+  wallJumpVertical: {x: 2, y: 10}
+  wallJumpUp: {x: 25, y: 35}
+  wallJumpAway: {x: 30, y: 10}
   wallJumpVerticalControlDelay: 0.1
-  wallJumpAwayControlDelay: 0.15
-  wallJumpAwayAngleModifier: 0.5
-  jumpOffLedgeDelay: 0.5
-  fallMultiplier: 3.5
-  lowJumpMultiplier: 5
+  wallJumpAwayControlDelay: 0.25
+  wallJumpUpControlDelay: 0.25
+  jumpQueueTimer: 0.15
+  coyoteJumpTimer: 0.2
+  _CanGrabWall: 0
   slideRate: 2
   wallGrabStaminaMax: 3
+  wallStickTime: 0.1
   touchedHazard:
     m_PersistentCalls:
       m_Calls:
