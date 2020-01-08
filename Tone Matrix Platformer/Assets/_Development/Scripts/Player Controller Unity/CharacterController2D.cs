@@ -12,7 +12,7 @@ public class CharacterController2D : MonoBehaviour
 	private Collision playerColl;
 	private Rigidbody2D characterRigi;
 	private bool facingRight = true;
-	private Vector3 velocity = Vector3.zero;
+	private Vector3 velocitySmoothing = Vector3.zero;
 	private float moveX;
 	private float moveY;
 	private float maxJumpVelocity;
@@ -57,8 +57,11 @@ public class CharacterController2D : MonoBehaviour
 	[SerializeField] private float lowJumpMultiplier = 5f;
 
 	[Header("Wall Mechanics")]
+	[SerializeField] private bool _CanGrabWall = false;
 	[SerializeField] private float slideRate = 2f;
 	[SerializeField] private float wallGrabStaminaMax = 3.0f;
+	[SerializeField] private float wallStickTime = 0.15f;
+	private float timeToWallUnstick;
 	private float wallGrabStamina = 0.0f;
 	private bool wallGrabDepleted = false;
 
@@ -91,77 +94,71 @@ public class CharacterController2D : MonoBehaviour
 
 		DetermineIfCanCoyoteJump();
 
-		grabWall = Input.GetAxis("LT") == 0 ? false : true;
-
-		WallGrabStamina();
+		if (_CanGrabWall) {
+			WallGrabStamina();
+		}
 
 		if (jumpInputDown ||
 			(applyJumpQueue && (playerColl.collInfo.onGround || ((playerColl.collInfo.onWallLeft || playerColl.collInfo.onWallRight) && !playerColl.collInfo.onGround)))) {
 			HandleJump();
 		}
 
-		Move(moveX, moveY, jumpInputDown, grabWall);
-
-		ApplyGravityScale(grabWall);
-	}
-
-	public void Move (float x, float y, bool jump, bool grabWall)
-	{
-		if (playerColl.collInfo.touchedHazard) {
-			touchedHazard.Invoke();
-		}
-
-		// If the player is grabbing a wall then lock x movement and allow them to move up or down the wall
-		if (playerColl.collInfo.onWall && grabWall && !playerColl.collInfo.onGround && canMove && !wallGrabDepleted)
-		{
-			characterRigi.velocity = new Vector2(0f, (y));
-		}
-		else
-		{
-			if (canMove)
-			{
-				// Move the character by finding the target velocity
-				Vector3 targetVelocity = new Vector2(x, characterRigi.velocity.y);
-
-				if (targetVelocity.x != 0) {
-						characterRigi.velocity = Vector3.SmoothDamp(characterRigi.velocity, targetVelocity, ref velocity,
-							(playerColl.collInfo.onGround) ? accelerationTimeGrounded : accelerationTimeAirborne);
-				}
-				else {
-					characterRigi.velocity = Vector3.SmoothDamp(characterRigi.velocity, targetVelocity, ref velocity,
-							(playerColl.collInfo.onGround) ? decelerationTimeGrounded : decelerationTimeAirborne);
-				}
+		if (jumpInputUp) {
+			if (characterRigi.velocity.y > minJumpVelocity) {
+				characterRigi.velocity = new Vector2(characterRigi.velocity.x, minJumpVelocity);
 			}
-
-			if (!playerColl.collInfo.onGround && playerColl.collInfo.onWall && (x != 0f))
-				WallSlide();
 		}
 
-		HandlePlayerSpriteFlip(x, y);
+		Move();
+
+		ApplyGravityScale();
 	}
 
-	// Affect gravity scale for better jumping
-	private void ApplyGravityScale(bool grabWall)
-	{
-		if (characterRigi.velocity.y < 0)
-		{
-			characterRigi.gravityScale = fallMultiplier;
-			applyWallSlide = true;
+	private void GetInput () {
+		Vector2 movementInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+
+		if (movementInput.magnitude < controllerDeadZone)
+			movementInput = Vector2.zero;
+
+		moveX = movementInput.x;
+		moveY = movementInput.y;
+
+		grabWall = Input.GetAxis("LT") == 0 ? false : true;
+
+		jumpInputDown = Input.GetButtonDown("Jump") ? true : false;
+		jumpInputUp = Input.GetButtonUp("Jump") ? true : false;
+	}
+
+	private void DetermineIfCanCoyoteJump () {
+		if (!playerColl.collInfo.onGround && !playerColl.collInfo.onWall && !jumping && characterRigi.velocity.y < 0f &&
+			(Time.time <= (playerColl.collInfo.timeLeftGround + coyoteJumpTimer))) {
+			canCoyoteJump = true;
 		}
-		else if (characterRigi.velocity.y > 0)
-		{
-			characterRigi.gravityScale = _DefaultGravityMultiplier;
-			applyWallSlide = false;
+		else {
+			canCoyoteJump = false;
 		}
-		else if (grabWall && playerColl.collInfo.onWall && !playerColl.collInfo.onGround && !wallGrabDepleted)
-		{
-			characterRigi.gravityScale = 0f;
+	}
+
+	private void WallGrabStamina () {
+		if (playerColl.collInfo.onWall && grabWall && !playerColl.collInfo.onGround) {
+			wallGrabStamina += Time.deltaTime;
+		}
+		else if (playerColl.collInfo.onGround) {
+			wallGrabStamina = 0.0f;
+		}
+
+		if (wallGrabStamina >= wallGrabStaminaMax) {
+			wallGrabDepleted = true;
+			GetComponent<SpriteRenderer>().color = new Color(255, 0, 0);
+		}
+		else {
+			wallGrabDepleted = false;
+			GetComponent<SpriteRenderer>().color = new Color(255, 255, 255);
 		}
 	}
 
 	// Determines which type of jump that needs to be performed
-	private void HandleJump()
-	{
+	private void HandleJump () {
 		// Standard ground jump
 		if (playerColl.collInfo.onGround) {
 			playerColl.collInfo.onGround = false;
@@ -195,11 +192,89 @@ public class CharacterController2D : MonoBehaviour
 		}
 	}
 
-	private void DoJump(Vector2 dir, float jumpForce)
-	{
+	private void DoJump (Vector2 dir, float jumpForce) {
 		characterRigi.velocity = new Vector2(characterRigi.velocity.x, 0.0f);
 		characterRigi.velocity += dir * jumpForce;
 		jumping = true;
+	}
+
+	public void Move()
+	{
+		if (playerColl.collInfo.touchedHazard) {
+			touchedHazard.Invoke();
+		}
+
+		// If the player is grabbing a wall then lock x movement and allow them to move up or down the wall
+		if (_CanGrabWall) {
+			if (playerColl.collInfo.onWall && grabWall && !playerColl.collInfo.onGround && canMove && !wallGrabDepleted) {
+				characterRigi.velocity = new Vector2(0f, moveY * runSpeed);
+			}
+		}
+		else
+		{
+			// Move the character by finding the target velocity
+			Vector3 targetVelocity = new Vector2(moveX * runSpeed, characterRigi.velocity.y);
+
+			if (targetVelocity.x != 0) {
+					characterRigi.velocity = Vector3.SmoothDamp(characterRigi.velocity, targetVelocity, ref velocitySmoothing,
+						(playerColl.collInfo.onGround) ? accelerationTimeGrounded : accelerationTimeAirborne);
+			}
+			else {
+				characterRigi.velocity = Vector3.SmoothDamp(characterRigi.velocity, targetVelocity, ref velocitySmoothing,
+						(playerColl.collInfo.onGround) ? decelerationTimeGrounded : decelerationTimeAirborne);
+			}
+
+			if (!playerColl.collInfo.onGround && playerColl.collInfo.onWall && (moveX != 0f))
+				HandleWallSlide();
+
+			HandleStickyWallDelay();
+		}
+
+		HandlePlayerSpriteFlip();
+	}
+
+	private void HandleWallSlide () {
+		if (applyWallSlide) {
+			characterRigi.velocity = new Vector2(characterRigi.velocity.x, -slideRate);
+		}
+	}
+
+	private void HandleStickyWallDelay () {
+		if (playerColl.collInfo.onWall && !playerColl.collInfo.onGround && characterRigi.velocity.y < 0) {
+			if (timeToWallUnstick > 0) {
+				characterRigi.velocity = new Vector2(0.0f, characterRigi.velocity.y);
+
+				int wallDirX = playerColl.collInfo.onWallLeft ? -1 : 1;
+
+				if (moveX != wallDirX && moveX != 0) {
+					timeToWallUnstick -= Time.deltaTime;
+				}
+				else {
+					timeToWallUnstick = wallStickTime;
+				}
+			}
+		}
+		else {
+			timeToWallUnstick = wallStickTime;
+		}
+	}
+
+	// Affect gravity scale for better jumping
+	private void ApplyGravityScale()
+	{
+		if (characterRigi.velocity.y < 0) {
+			characterRigi.gravityScale = fallMultiplier;
+			applyWallSlide = true;
+		}
+		else if (characterRigi.velocity.y > 0) {
+			characterRigi.gravityScale = _DefaultGravityMultiplier;
+			applyWallSlide = false;
+		}
+		else if (_CanGrabWall) {
+			if (grabWall && playerColl.collInfo.onWall && !playerColl.collInfo.onGround && !wallGrabDepleted) {
+				characterRigi.gravityScale = 0f;
+			}
+		}
 	}
 
 	IEnumerator DisableMovementWallJumpOff(float time)
@@ -222,16 +297,16 @@ public class CharacterController2D : MonoBehaviour
 		canMove = true;
 	}
 
-	private void HandlePlayerSpriteFlip(float x, float y)
+	private void HandlePlayerSpriteFlip()
 	{
 		// If the input is moving the player right and the player is facing left...
-		if (x > 0 && !facingRight)
+		if (moveX > 0 && !facingRight)
 		{
 			// ... flip the player.
 			Flip();
 		}
 		// Otherwise if the input is moving the player left and the player is facing right...
-		else if (x < 0 && facingRight)
+		else if (moveX < 0 && facingRight)
 		{
 			// ... flip the player.
 			Flip();
@@ -250,61 +325,10 @@ public class CharacterController2D : MonoBehaviour
 		transform.localScale = theScale;
 	}
 
-	private void WallSlide()
-	{
-		if (applyWallSlide)
-		{
-			characterRigi.velocity = new Vector2(characterRigi.velocity.x, -slideRate);
-		}
-	}
-
-	private void GetInput()
-	{
-		Vector2 movementInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-
-		if (movementInput.magnitude < controllerDeadZone)
-			movementInput = Vector2.zero;
-
-		moveX = movementInput.x * runSpeed;
-		moveY = movementInput.y * runSpeed;
-
-		jumpInputDown = Input.GetButtonDown("Jump") ? true : false;
-		jumpInputUp = Input.GetButtonUp("Jump") ? true : false;
-	}
-
-	private void DetermineIfCanCoyoteJump()
-	{
-		if (!playerColl.collInfo.onGround && !playerColl.collInfo.onWall && !jumping && characterRigi.velocity.y < 0f &&
-			(Time.time <= (playerColl.collInfo.timeLeftGround + coyoteJumpTimer))) {
-			canCoyoteJump = true;
-		}
-		else {
-			canCoyoteJump = false;
-		}
-	}
-
-	private void WallGrabStamina()
-	{
-		if (playerColl.collInfo.onWall && grabWall && !playerColl.collInfo.onGround)
-			wallGrabStamina += Time.deltaTime;
-		else if (playerColl.collInfo.onGround)
-			wallGrabStamina = 0.0f;
-
-		if (wallGrabStamina >= wallGrabStaminaMax)
-		{
-			wallGrabDepleted = true;
-			GetComponent<SpriteRenderer>().color = new Color(255, 0, 0);
-		}
-		else
-		{
-			wallGrabDepleted = false;
-			GetComponent<SpriteRenderer>().color = new Color(255, 255, 255);
-		}
-	}
-
 	public void ResetPlayer () {
 		jumping = false;
-		velocity = Vector2.zero;
+		velocitySmoothing = Vector2.zero;
+		characterRigi.velocity = Vector2.zero;
 	}
 
 	IEnumerator JumpQueueTimer (float time) {
