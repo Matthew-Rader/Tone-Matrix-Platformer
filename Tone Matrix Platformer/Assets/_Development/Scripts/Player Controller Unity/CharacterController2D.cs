@@ -11,6 +11,7 @@ public class CharacterController2D : MonoBehaviour
 	private Collision playerColl;
 	private Rigidbody2D characterRigi;
 	[SerializeField] private GameManager gameManager;
+	private bool alive = true;
 
 	#region  MOVEMENT VARIABLES
 	[Header("Movement")]
@@ -89,6 +90,10 @@ public class CharacterController2D : MonoBehaviour
 
 	void Update()
 	{
+		if (!alive) {
+			return;
+		}
+
 		if (canMove) {
 			GetMovementInput();
 		}
@@ -225,6 +230,8 @@ public class CharacterController2D : MonoBehaviour
 	public void Move()
 	{
 		if (playerColl.collInfo.touchedHazard) {
+			alive = false;
+			Debug.Log("touched hazard");
 			touchedHazard.Invoke();
 		}
 
@@ -352,6 +359,7 @@ public class CharacterController2D : MonoBehaviour
 
 	public void ResetPlayer () {
 		jumping = false;
+		alive = true;
 		velocitySmoothing = Vector2.zero;
 		characterRigi.velocity = Vector2.zero;
 	}

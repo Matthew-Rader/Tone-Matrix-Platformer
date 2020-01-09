@@ -48,6 +48,7 @@ public class DeathFade : MonoBehaviour
 
 		// Freeze the player
 		transform.GetComponent<CharacterController2D>().enabled = false;
+		transform.GetComponent<Collision>().enabled = false;
 
 		yield return new WaitForSeconds(0.75f);
 
@@ -55,6 +56,7 @@ public class DeathFade : MonoBehaviour
 
 		// Unfreeze the player
 		transform.GetComponent<CharacterController2D>().enabled = true;
+		transform.GetComponent<Collision>().enabled = true; ;
 
 		fadeAnim.SetTrigger("FadeIn");
 	}

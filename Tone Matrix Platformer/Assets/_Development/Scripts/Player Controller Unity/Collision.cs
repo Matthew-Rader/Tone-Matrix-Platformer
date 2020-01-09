@@ -56,6 +56,8 @@ public class Collision : MonoBehaviour
 	void FixedUpdate () {
 		bool wasGrounded = collInfo.onGround;
 
+		collInfo.Reset();
+
 		// Check for ground collision
 		collInfo.onGround = Physics2D.OverlapBox((Vector2)transform.position + bottomOffset, widthOverlapBox, 0.0f, whatIsGround);
 
@@ -104,6 +106,7 @@ public class Collision : MonoBehaviour
 		public void Reset () {
 			onGround = onWall = false;
 			onWallLeft = onWallRight = false;
+			touchedHazard = false;
 		}
 	}
 }
