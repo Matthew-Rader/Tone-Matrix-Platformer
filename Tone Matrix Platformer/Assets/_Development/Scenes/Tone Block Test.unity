@@ -1333,6 +1333,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 83186f6a5cf2e394e93244c7df3570b8, type: 3}
+--- !u!1 &1380263411 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5141612786085762577, guid: 53a02065dbd603b4786152d8c720cba7,
+    type: 3}
+  m_PrefabInstance: {fileID: 251941348400042997}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1380263412
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1380263411}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: b925155b4f59b1f4096d15fbbfc199e3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &1383483066
 GameObject:
   m_ObjectHideFlags: 0
@@ -1656,7 +1681,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -35, y: -13}
+  m_AnchoredPosition: {x: 1, y: -18}
   m_SizeDelta: {x: 100, y: 30}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1875045029
@@ -1748,7 +1773,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -141, y: -18}
+  m_AnchoredPosition: {x: -104.99994, y: -23}
   m_SizeDelta: {x: 25, y: 25}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &2039577090
@@ -1837,7 +1862,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
@@ -1904,12 +1929,12 @@ PrefabInstance:
     - target: {fileID: 5141612786085762579, guid: 53a02065dbd603b4786152d8c720cba7,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -14.9
+      value: -13.8
       objectReference: {fileID: 0}
     - target: {fileID: 5141612786085762579, guid: 53a02065dbd603b4786152d8c720cba7,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.35
+      value: -4.92
       objectReference: {fileID: 0}
     - target: {fileID: 5141612786085762579, guid: 53a02065dbd603b4786152d8c720cba7,
         type: 3}
@@ -1968,24 +1993,29 @@ PrefabInstance:
       objectReference: {fileID: 63675652}
     - target: {fileID: 1966667620817197095, guid: 53a02065dbd603b4786152d8c720cba7,
         type: 3}
+      propertyPath: startedRunning.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1966667620817197095, guid: 53a02065dbd603b4786152d8c720cba7,
+        type: 3}
       propertyPath: gameManager
       value: 
       objectReference: {fileID: 63675652}
     - target: {fileID: 1966667620817197095, guid: 53a02065dbd603b4786152d8c720cba7,
         type: 3}
-      propertyPath: wallJumpAwayControlDelay
-      value: 0.2
+      propertyPath: startedRunning.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1966667620817197095, guid: 53a02065dbd603b4786152d8c720cba7,
         type: 3}
-      propertyPath: wallJumpUpControlDelay
-      value: 0.2
+      propertyPath: startedRunning.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1966667620817197095, guid: 53a02065dbd603b4786152d8c720cba7,
         type: 3}
-      propertyPath: maxJumpHeight
-      value: 4.5
-      objectReference: {fileID: 0}
+      propertyPath: startedRunning.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1380263412}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 53a02065dbd603b4786152d8c720cba7, type: 3}
 --- !u!1001 &8827735451627997374

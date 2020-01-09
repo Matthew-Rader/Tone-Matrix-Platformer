@@ -10,6 +10,7 @@ public class CharacterController2D : MonoBehaviour
 {
 	private Collision playerColl;
 	private Rigidbody2D characterRigi;
+	private Animator animator;
 	[SerializeField] private GameManager gameManager;
 	private bool alive = true;
 
@@ -69,6 +70,8 @@ public class CharacterController2D : MonoBehaviour
 	[Header("Game Events")]
 	// Should call DeathFade.StartDeathFadeCoroutine()
 	public UnityEvent touchedHazard;
+	public UnityEvent startedRunning;
+	public UnityEvent stopMoving;
 	#endregion
 
 	[System.Serializable]
@@ -78,6 +81,7 @@ public class CharacterController2D : MonoBehaviour
 	{
 		characterRigi = GetComponent<Rigidbody2D>();
 		playerColl = GetComponent<Collision>();
+		animator = GetComponent<Animator>();
 
 		float tempGravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
 		_DefaultGravityMultiplier = tempGravity / Physics2D.gravity.y;
@@ -130,6 +134,15 @@ public class CharacterController2D : MonoBehaviour
 
 		moveX = movementInput.x;
 		moveY = movementInput.y;
+
+		if (moveX != 0) {
+			animator.SetBool("running", true);
+			startedRunning.Invoke();
+		}
+		else {
+			animator.SetBool("running", false);
+			stopMoving.Invoke();
+		}
 	}
 
 	private void GetJumpInput () {

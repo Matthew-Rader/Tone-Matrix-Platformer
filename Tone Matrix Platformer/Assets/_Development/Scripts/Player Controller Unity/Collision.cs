@@ -35,28 +35,14 @@ public class Collision : MonoBehaviour
 	{
 		if (OnLandEvent == null)
 			OnLandEvent = new UnityEvent();
-
-		collider = GetComponent<BoxCollider2D>();
-
-		Bounds bounds = collider.bounds;
-		float boundsWidth = bounds.size.x;
-		float boundsHeight = bounds.size.y;
-		float overlapBoxWidth = boundsWidth - 0.02f;
-		float overlapBoxHeight = boundsHeight - 0.02f;
-
-		bottomOffset = new Vector2(0.0f, -(bounds.size.y / 2.0f));
-		aboveOffset = new Vector2(0.0f, (bounds.size.y / 2.0f));
-		leftOffset = new Vector2(-(bounds.size.x / 2.0f), 0.0f);
-		rightOffset = new Vector2((bounds.size.x / 2.0f), 0.0f);
-
-		heightOverlapBox = new Vector2(0.02f, overlapBoxHeight);
-		widthOverlapBox = new Vector2(overlapBoxWidth, 0.02f);
 	}
 
 	void FixedUpdate () {
 		bool wasGrounded = collInfo.onGround;
 
 		collInfo.Reset();
+
+		SetOverLapBoxOffsetAndDimension();
 
 		// Check for ground collision
 		collInfo.onGround = Physics2D.OverlapBox((Vector2)transform.position + bottomOffset, widthOverlapBox, 0.0f, whatIsGround);
@@ -83,6 +69,24 @@ public class Collision : MonoBehaviour
 								  Physics2D.OverlapBox((Vector2)transform.position + aboveOffset, widthOverlapBox, 0.0f, whatIsHazard) ||
 								  Physics2D.OverlapBox((Vector2)transform.position + leftOffset, heightOverlapBox, 0.0f, whatIsHazard) ||
 								  Physics2D.OverlapBox((Vector2)transform.position + rightOffset, heightOverlapBox, 0.0f, whatIsHazard));
+	}
+
+	void SetOverLapBoxOffsetAndDimension () {
+		collider = GetComponent<BoxCollider2D>();
+
+		Bounds bounds = collider.bounds;
+		float boundsWidth = bounds.size.x;
+		float boundsHeight = bounds.size.y;
+		float overlapBoxWidth = boundsWidth - 0.02f;
+		float overlapBoxHeight = boundsHeight - 0.02f;
+
+		bottomOffset = new Vector2(0.0f, -(bounds.size.y / 2.0f));
+		aboveOffset = new Vector2(0.0f, (bounds.size.y / 2.0f));
+		leftOffset = new Vector2(-(bounds.size.x / 2.0f), 0.0f);
+		rightOffset = new Vector2((bounds.size.x / 2.0f), 0.0f);
+
+		heightOverlapBox = new Vector2(0.02f, overlapBoxHeight);
+		widthOverlapBox = new Vector2(overlapBoxWidth, 0.02f);
 	}
 
 	void OnDrawGizmos()
