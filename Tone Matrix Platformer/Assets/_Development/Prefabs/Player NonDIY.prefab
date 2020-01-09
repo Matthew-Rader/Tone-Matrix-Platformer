@@ -192,7 +192,7 @@ MonoBehaviour:
   accelerationTimeGrounded: 0.12
   decelerationTimeGrounded: 0.03
   controllerDeadZone: 0.25
-  maxJumpHeight: 5
+  maxJumpHeight: 4.5
   minJumpHeight: 1
   timeToJumpApex: 0.25
   fallMultiplier: 11
@@ -200,8 +200,8 @@ MonoBehaviour:
   wallJumpUp: {x: 25, y: 35}
   wallJumpAway: {x: 30, y: 10}
   wallJumpVerticalControlDelay: 0.1
-  wallJumpAwayControlDelay: 0.25
-  wallJumpUpControlDelay: 0.25
+  wallJumpAwayControlDelay: 0.2
+  wallJumpUpControlDelay: 0.2
   jumpQueueTimer: 0.15
   coyoteJumpTimer: 0.2
   _CanGrabWall: 0
