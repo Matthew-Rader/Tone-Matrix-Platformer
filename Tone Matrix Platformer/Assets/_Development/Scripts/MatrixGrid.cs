@@ -56,11 +56,9 @@ public class MatrixGrid : MonoBehaviour
 
     void Update() {
 		if (timeBetweenBeatsCounter < ((60.0f / levelInfo.BPM) / 4.0f)) {
-			Debug.Log("if");
 			timeBetweenBeatsCounter += Time.deltaTime;
 		}
 		else {
-			Debug.Log("else");
 			PlayEnabledBlocksInCol(currentColToPlay);
 			currentColToPlay = (currentColToPlay + 1) % numNoteBlocksWidth;
 			timeBetweenBeatsCounter = 0.0f;

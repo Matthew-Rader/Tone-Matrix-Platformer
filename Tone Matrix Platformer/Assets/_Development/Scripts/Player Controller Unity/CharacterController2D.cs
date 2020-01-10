@@ -125,7 +125,6 @@ public class CharacterController2D : MonoBehaviour
 
 	private void GetMovementInput () {
 		Vector2 movementInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-		Debug.Log(movementInput);
 
 		if (movementInput.magnitude < controllerDeadZone)
 			movementInput = Vector2.zero;
@@ -242,7 +241,6 @@ public class CharacterController2D : MonoBehaviour
 	{
 		if (playerColl.collInfo.touchedHazard) {
 			alive = false;
-			Debug.Log("touched hazard");
 			touchedHazard.Invoke();
 		}
 
