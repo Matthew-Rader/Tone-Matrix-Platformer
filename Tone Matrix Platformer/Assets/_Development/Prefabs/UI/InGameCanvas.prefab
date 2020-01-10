@@ -236,11 +236,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 1092107733595567464, guid: c39ca6aef8068714185fd0437fcb3a3c,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3437820240928829278}
     - target: {fileID: 1092107734709600583, guid: c39ca6aef8068714185fd0437fcb3a3c,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -251,16 +246,16 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: ExitToMainMenu
       objectReference: {fileID: 0}
-    - target: {fileID: 1092107734165346099, guid: c39ca6aef8068714185fd0437fcb3a3c,
+    - target: {fileID: 1092107733595567464, guid: c39ca6aef8068714185fd0437fcb3a3c,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 3437820240928829278}
     - target: {fileID: 1092107734165346099, guid: c39ca6aef8068714185fd0437fcb3a3c,
         type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ExitGame
-      objectReference: {fileID: 0}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3437820240928829278}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c39ca6aef8068714185fd0437fcb3a3c, type: 3}
 --- !u!1 &3437820239096263200 stripped
@@ -391,6 +386,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7879025771252885837, guid: 7335d237c2e2b264f9a4de1d4377fa85,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 245
+      objectReference: {fileID: 0}
+    - target: {fileID: 7879025771426003433, guid: 7335d237c2e2b264f9a4de1d4377fa85,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 22
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7335d237c2e2b264f9a4de1d4377fa85, type: 3}

@@ -124,7 +124,8 @@ public class CharacterController2D : MonoBehaviour
 	}
 
 	private void GetMovementInput () {
-		Vector2 movementInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+		Vector2 movementInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+		Debug.Log(movementInput);
 
 		if (movementInput.magnitude < controllerDeadZone)
 			movementInput = Vector2.zero;
