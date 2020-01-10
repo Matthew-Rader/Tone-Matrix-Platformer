@@ -11,7 +11,6 @@ public class CharacterController2D : MonoBehaviour
 	private Collision playerColl;
 	private Rigidbody2D characterRigi;
 	private Animator animator;
-	[SerializeField] private GameManager gameManager;
 	private bool alive = true;
 
 	#region  MOVEMENT VARIABLES
@@ -88,8 +87,6 @@ public class CharacterController2D : MonoBehaviour
 
 		maxJumpVelocity = Mathf.Abs(Physics2D.gravity.y * _DefaultGravityMultiplier) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(Physics2D.gravity.y * _DefaultGravityMultiplier) * minJumpHeight);
-
-		transform.position = gameManager.currentReSpawnPoint.transform.position;
 	}
 
 	void Update()

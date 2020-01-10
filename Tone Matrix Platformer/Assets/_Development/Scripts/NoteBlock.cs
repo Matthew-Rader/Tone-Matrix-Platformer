@@ -43,7 +43,7 @@ public class NoteBlock : MonoBehaviour
 	}
 
 	void OnMouseOver () {
-		if (Input.GetMouseButtonDown(0) && !PauseMenu._GamePaused) {
+		if (Input.GetMouseButtonDown(0) && !GameManager.gamePaused) {
 			// Enabled the block
 			if (!blockEnabled && 
 				(selectableBlockCount.CurrentSelectCountLessThanMax() || freePlay)) {
@@ -56,7 +56,7 @@ public class NoteBlock : MonoBehaviour
 				mouseDownState.SetState(MouseDownState.State.Disable);
 			}
 		}
-		else if (Input.GetMouseButton(0) && !PauseMenu._GamePaused) {
+		else if (Input.GetMouseButton(0) && !GameManager.gamePaused) {
 			// Enabled the block
 			if (!blockEnabled && 
 				(selectableBlockCount.CurrentSelectCountLessThanMax() || freePlay) && 

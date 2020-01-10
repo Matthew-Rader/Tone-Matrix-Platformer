@@ -5,21 +5,25 @@ using UnityEngine;
 public class MatrixGrid : MonoBehaviour
 {
 	[SerializeField] private NoteBlock noteBlockPrefab;
-	[SerializeField] private Scale scale;
-	[SerializeField] private SelectableBlockCount selectableBlockCount;
+	[SerializeField] private LevelInformation levelInfo;
+	[SerializeField] private Transform spawnPoint;
+	[SerializeField] private float noteBlockPadding = 0.4f;
+	[SerializeField] private bool isFreePlay = false;
+
 	private NoteBlock[,] noteBlockMatrix;
 	private int numNoteBlocks;
-	[SerializeField] private float noteBlockPadding = 0.4f;
-	[SerializeField] private int _BPM = 90;
+	private int currentColToPlay = 0;
+	private float timeBetweenBeatsCounter = 0.0f;
 
-	int currentColToPlay = 0;
-	float timeBetweenBeatsCounter = 0.0f;
+    void Start() {
+		numNoteBlocks = levelInfo.scale.notes.Length;
 
-    void Start()
-    {
-		numNoteBlocks = scale.notes.Length;
+		CreateMatrix();
 
-		CreateMatrix();		
+		if (!isFreePlay) {
+			GameManager.SetSpawnPoint(spawnPoint);
+			GameManager.SetPlayerToCurrentSpawnPoint();
+		}
     }
 
 	void CreateMatrix () {
@@ -34,8 +38,8 @@ public class MatrixGrid : MonoBehaviour
 		for (int x = 0; x < numNoteBlocks; ++x) {
 			for (int y = 0; y < numNoteBlocks; ++y) {
 				noteBlockMatrix[x, y] = Instantiate(noteBlockPrefab, blockSpawnPosition, Quaternion.identity, this.gameObject.transform);
-				noteBlockMatrix[x, y].SetNote(scale.notes[y]);
-				noteBlockMatrix[x, y].SetSelectableBlockCount(selectableBlockCount);
+				noteBlockMatrix[x, y].SetNote(levelInfo.scale.notes[y]);
+				noteBlockMatrix[x, y].SetSelectableBlockCount(levelInfo.selectableBlockCount);
 				blockSpawnPosition.y += (1.0f + noteBlockPadding);
 			}
 			blockSpawnPosition.x += (1.0f + noteBlockPadding);
@@ -43,9 +47,8 @@ public class MatrixGrid : MonoBehaviour
 		}
 	}
 
-    void Update()
-    {
-		if (timeBetweenBeatsCounter < ((60.0f / _BPM) / 4.0f)) {
+    void Update() {
+		if (timeBetweenBeatsCounter < ((60.0f / levelInfo.BPM) / 4.0f)) {
 			timeBetweenBeatsCounter += Time.deltaTime;
 		}
 		else {

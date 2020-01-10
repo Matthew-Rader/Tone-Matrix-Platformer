@@ -5,7 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-	public Transform currentReSpawnPoint;
+	public static Transform _CurrentSpawnPoint;
+	public static int currentLevel;
+	public static bool gamePaused = false;
 
 	// GAMEMANAGER SINGLETON --------------------------------------------------
 	private static GameManager _gameMangerInstance;
@@ -15,10 +17,9 @@ public class GameManager : MonoBehaviour
 	private const string _FreePlayLevelName = "ToneMatrix Freeplay";
 	private const string _MainMenu = "Main Menu";
 	private const string _Level = "Level ";
-	[SerializeField] private int startingLevel = 1;
-	private int currentLevel;
+	private const string _PlayerTag = "Player";
+	[SerializeField] private static int startingLevel = 1;
 
-	// Start is called before the first frame update
 	void Awake()
     {
 		if (_gameMangerInstance != null && _gameMangerInstance != this) {
@@ -32,25 +33,37 @@ public class GameManager : MonoBehaviour
 
 	}
 
-	public void LoadFirstLevel () {
+	public static void LoadFirstLevel () {
 		currentLevel = startingLevel;
 		SceneManager.LoadScene(_Level + startingLevel);
 	}
 
-	public void LoadNextLevel () {
+	public static void LoadNextLevel () {
 		currentLevel += 1;
 		SceneManager.LoadScene(_Level + (currentLevel));
 	}
 
-	public void LoadLevelFreePlay () {
+	public static void LoadLevelFreePlay () {
 		SceneManager.LoadScene(_FreePlayLevelName);
 	}
 
-	public void LoadMainMenu () {
+	public static void LoadMainMenu () {
 		SceneManager.LoadScene(_MainMenu);
 	}
 
-	public void ExitGame () {
+	public static void ExitGame () {
 		Application.Quit();
+	}
+
+	public static Vector3 GetCurrentSpawnPointPosition () {
+		return _CurrentSpawnPoint.position;
+	}
+
+	public static void SetSpawnPoint (Transform spawnPoint) {
+		_CurrentSpawnPoint = spawnPoint;
+	}
+
+	public static void SetPlayerToCurrentSpawnPoint () {
+		GameObject.FindGameObjectWithTag(_PlayerTag).transform.position = _CurrentSpawnPoint.position;
 	}
 }

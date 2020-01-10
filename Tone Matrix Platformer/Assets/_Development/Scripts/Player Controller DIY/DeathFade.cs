@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 public class DeathFade : MonoBehaviour
 {
 	[SerializeField] private Animator fadeAnim;
-	[SerializeField] private GameManager gameManager;
 
 	public void StartDeathFadeCoroutine () {
 		StartCoroutine(ReSpawnPlayer());
@@ -30,7 +29,7 @@ public class DeathFade : MonoBehaviour
 
 		yield return new WaitForSeconds(0.75f);
 
-		transform.position = gameManager.currentReSpawnPoint.transform.position;
+		GameManager.SetPlayerToCurrentSpawnPoint();
 
 		// Unfreeze the player
 		transform.GetComponent<Player>().enabled = true;
@@ -52,7 +51,7 @@ public class DeathFade : MonoBehaviour
 
 		yield return new WaitForSeconds(0.75f);
 
-		transform.position = gameManager.currentReSpawnPoint.transform.position;
+		GameManager.SetPlayerToCurrentSpawnPoint(); ;
 
 		// Unfreeze the player
 		transform.GetComponent<CharacterController2D>().enabled = true;

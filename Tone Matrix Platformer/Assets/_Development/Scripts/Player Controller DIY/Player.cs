@@ -6,9 +6,6 @@ using Cinemachine;
 
 [RequireComponent (typeof (Controller2D))]
 public class Player : MonoBehaviour {
-	// SERIALIZED PRIVATE
-	[SerializeField] private GameManager gameManager;
-
 	[Header("Movement")]
 	[SerializeField] private float moveSpeed = 9.75f;
 	[SerializeField] private float accelerationTimeAirborne = 0.1f;
@@ -87,8 +84,6 @@ public class Player : MonoBehaviour {
 
 		jumping = onLeftWall = onRightWall = applyJumpQueue = false;
 		canUseJumpPlatform = canMove = true;
-
-		transform.position = gameManager.currentReSpawnPoint.transform.position;
     }
 
 	void Update () {

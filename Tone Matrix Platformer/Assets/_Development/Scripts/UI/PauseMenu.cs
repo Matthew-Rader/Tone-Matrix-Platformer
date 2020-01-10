@@ -4,12 +4,11 @@ using UnityEngine;
 
 public class PauseMenu : MonoBehaviour
 {
-	public static bool _GamePaused = false;
 	[SerializeField] private GameObject pauseMenuUI;
 
 	void Update () {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
-			if (_GamePaused) {
+			if (GameManager.gamePaused) {
 				Resume();
 			}
 			else {
@@ -19,14 +18,22 @@ public class PauseMenu : MonoBehaviour
 	}
 
 	public void Resume () {
-		_GamePaused = false;
+		GameManager.gamePaused = false;
 		pauseMenuUI.SetActive(false);
 		Time.timeScale = 1.0f;
 	}
 
 	void Pause () {
-		_GamePaused = true;
+		GameManager.gamePaused = true;
 		pauseMenuUI.SetActive(true);
 		Time.timeScale = 0.0f;
+	}
+
+	public void ExitToMainMenu () {
+		GameManager.LoadMainMenu();
+	}
+
+	public void ExitGame () {
+		GameManager.ExitGame();
 	}
 }
