@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   matrixWidth: 6
   scale: {fileID: 11400000, guid: 0a67abc0d7f6fe34eb3c8896fcb09f2b, type: 2}
-  selectableBlockCount: {fileID: 11400000, guid: c851425550401c549b94510663c5da73,
+  selectableBlockCount: {fileID: 11400000, guid: 739be5319ab8697408a329b38ffb53f3,
     type: 2}
   BPM: 90
