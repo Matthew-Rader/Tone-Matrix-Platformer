@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
 	public const string _FreePlayLevelName = "ToneMatrix Freeplay";
 	public const string _MainMenu = "Main Menu";
 	public const string _Level = "Level ";
-	public  const string _PlayerTag = "Player";
+	public const string _PlayerTag = "Player";
 
 	// PRIVATE VARIABLES ----------------------------------------------------------------
 	[SerializeField] private static int startingLevel = 1;

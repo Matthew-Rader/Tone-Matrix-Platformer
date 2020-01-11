@@ -40,6 +40,7 @@ public class DeathFade : MonoBehaviour
 	// This could eventually trigger a fuller death sequence to play.
 	// PlayerDeathAnim -> FadeOut -> Wait -> FadeIn -> PlayerEntraceAnim
 	public IEnumerator ReSpawnPlayerNonDIY () {
+		Debug.Log("fadeOut anim called");
 		fadeAnim.SetTrigger("FadeOut");
 
 		// Reset player movement information
@@ -47,16 +48,17 @@ public class DeathFade : MonoBehaviour
 
 		// Freeze the player
 		transform.GetComponent<CharacterController2D>().enabled = false;
-		transform.GetComponent<Collision>().enabled = false;
+		//transform.GetComponent<Collision>().enabled = false;
 
 		yield return new WaitForSeconds(0.75f);
 
-		GameManager.SetPlayerToCurrentSpawnPoint(); ;
+		GameManager.SetPlayerToCurrentSpawnPoint();
 
 		// Unfreeze the player
 		transform.GetComponent<CharacterController2D>().enabled = true;
-		transform.GetComponent<Collision>().enabled = true; ;
+		//transform.GetComponent<Collision>().enabled = true; ;
 
 		fadeAnim.SetTrigger("FadeIn");
+		Debug.Log("fadeIn anim called");
 	}
 }
