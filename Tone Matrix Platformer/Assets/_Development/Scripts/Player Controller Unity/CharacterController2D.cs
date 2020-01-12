@@ -15,7 +15,7 @@ public class CharacterController2D : MonoBehaviour
 
 	#region  MOVEMENT VARIABLES
 	[Header("Movement")]
-	[SerializeField] private float runSpeed = 40f;
+	[SerializeField] private float movementSpeed = 40f;
 	[SerializeField] private float accelerationTimeAirborne = 0.1f;
 	[SerializeField] private float decelerationTimeAirborne = 0.1f;
 	[SerializeField] private float accelerationTimeGrounded = 0.15f;
@@ -24,12 +24,15 @@ public class CharacterController2D : MonoBehaviour
 	private bool canMove = true;
 	private bool facingRight = true;
 	private Vector3 velocitySmoothing = Vector3.zero;
+	private Vector2 playerVelocity = Vector2.zero;
 	private float moveX;
 	private float moveY;
+	private float gravityScaled;
 	#endregion
 
 	#region JUMP SETTINGS AND VARIABLES
 	[Header("Jumping")]
+	[SerializeField] private bool _CanWallJump = true;
 	[SerializeField] private float maxJumpHeight = 2.25f;
 	[SerializeField] private float minJumpHeight = 1.0f;
 	[SerializeField] private float timeToJumpApex = 0.25f;
@@ -38,11 +41,6 @@ public class CharacterController2D : MonoBehaviour
 	[SerializeField] private Vector2 wallJumpVertical = new Vector2(2.0f, 10.0f);
 	[SerializeField] private Vector2 wallJumpUp = new Vector2(6.0f, 25.0f);
 	[SerializeField] private Vector2 wallJumpAway = new Vector2(20.0f, 10.0f);
-	[SerializeField] private float wallJumpVerticalControlDelay = 0.1f;
-	[SerializeField] private float wallJumpAwayControlDelay = 0.15f;
-	[SerializeField] private float wallJumpUpControlDelay = 0.15f;
-	[SerializeField] private float jumpQueueTimer = 0.15f;
-	[SerializeField] private float coyoteJumpTimer = 1.0f;
 	private float maxJumpVelocity;
 	private float minJumpVelocity;
 	private bool jumpInputDown = false;
@@ -51,11 +49,19 @@ public class CharacterController2D : MonoBehaviour
 	private bool applyJumpQueue = false;
 	private bool canCoyoteJump = false;
 	private float _DefaultGravityMultiplier;
+
+	[Header("Jump Timers and Delays")]
+	[SerializeField] private float wallJumpVerticalControlDelay = 0.1f;
+	[SerializeField] private float wallJumpAwayControlDelay = 0.15f;
+	[SerializeField] private float wallJumpUpControlDelay = 0.15f;
+	[SerializeField] private float jumpQueueTimer = 0.15f;
+	[SerializeField] private float coyoteJumpTimer = 1.0f;
 	#endregion
 
 	#region WALL MECHANIC VARIABLES
 	[Header("Wall Mechanics")]
 	[SerializeField] private bool _CanGrabWall = false;
+	[SerializeField] private bool _CanSlideAgainstWall = true;
 	[SerializeField] private float slideRate = 2f;
 	[SerializeField] private float wallGrabStaminaMax = 3.0f;
 	[SerializeField] private float wallStickTime = 0.15f;
@@ -118,6 +124,11 @@ public class CharacterController2D : MonoBehaviour
 			}
 		}
 
+		if (playerColl.collInfo.touchedHazard) {
+			alive = false;
+			touchedHazard.Invoke();
+		}
+
 		Move();
 
 		ApplyGravityScale();
@@ -170,11 +181,9 @@ public class CharacterController2D : MonoBehaviour
 
 			if (wallGrabStamina >= wallGrabStaminaMax) {
 				grabWall = true;
-				GetComponent<SpriteRenderer>().color = new Color(255, 0, 0);
 			}
 			else {
 				grabWall = false;
-				GetComponent<SpriteRenderer>().color = new Color(255, 255, 255);
 			}
 		}
 		else {
@@ -185,21 +194,21 @@ public class CharacterController2D : MonoBehaviour
 	private void HandleJump () {
 		Vector2 jumpVelocity;
 
-		// STANDARD GROUND JUMP ---------------------------------------------------------
+		// STANDARD GROUND JUMP
 		if (playerColl.collInfo.onGround) {
 			jumpVelocity = new Vector2(characterRigi.velocity.x, maxJumpVelocity);
 			DoJump(jumpVelocity);
 		}
-		// COYOTE JUMP ------------------------------------------------------------------
+		// COYOTE JUMP
 		else if (canCoyoteJump) {
 			jumpVelocity = new Vector2(characterRigi.velocity.x, maxJumpVelocity);
 			DoJump(jumpVelocity);
 		}
-		// SOME SORT OF WALL JUMP -------------------------------------------------------
-		else if (playerColl.collInfo.onWall && !playerColl.collInfo.onGround) {
+		// SOME SORT OF WALL JUMP
+		else if (_CanWallJump && playerColl.collInfo.onWall && !playerColl.collInfo.onGround) {
 			int wallDirX = playerColl.collInfo.onWallLeft ? -1 : 1;
 
-			// JUMP VERTICALLY UP WALL --------------------------------------------------
+			// JUMP VERTICALLY UP WALL
 			if (grabWall && 
 				(moveX == 0 || (moveX < 0f && playerColl.collInfo.onWallLeft) || (moveX > 0f && playerColl.collInfo.onWallRight))) {
 				StopCoroutine(DisableMovementWallJumpUp(0));
@@ -208,7 +217,7 @@ public class CharacterController2D : MonoBehaviour
 				jumpVelocity = new Vector2(wallJumpVertical.x, wallJumpVertical.y);
 				DoJump(jumpVelocity);
 			}
-			// JUMP UP A WALL -----------------------------------------------------------
+			// JUMP UP A WALL
 			else if ((wallDirX == -1 && moveX <0f) || (wallDirX == 1 && moveX > 0f)) {
 				StopCoroutine(DisableMovementWallJumpOff(0));
 				StartCoroutine(DisableMovementWallJumpOff(wallJumpUpControlDelay));
@@ -216,7 +225,7 @@ public class CharacterController2D : MonoBehaviour
 				Vector2 jumpAway = new Vector2(wallJumpUp.x * -wallDirX, wallJumpUp.y);
 				DoJump(jumpAway);
 			}
-			// JUMP AWAY FROM A WALL ----------------------------------------------------
+			// JUMP AWAY FROM A WALL
 			else {
 				StopCoroutine(DisableMovementWallJumpOff(0));
 				StartCoroutine(DisableMovementWallJumpOff(wallJumpAwayControlDelay));
@@ -225,7 +234,7 @@ public class CharacterController2D : MonoBehaviour
 				DoJump(jumpAway);
 			}
 		}
-		// START JUMP QUEUE -------------------------------------------------------------
+		// START JUMP QUEUE
 		else if (!applyJumpQueue) {
 			StartCoroutine(JumpQueueTimer(jumpQueueTimer));
 		}
@@ -239,21 +248,16 @@ public class CharacterController2D : MonoBehaviour
 
 	public void Move()
 	{
-		if (playerColl.collInfo.touchedHazard) {
-			alive = false;
-			touchedHazard.Invoke();
-		}
-
 		// If the player is grabbing a wall then lock x movement and allow them to move up or down the wall
 		if (_CanGrabWall) {
 			if (playerColl.collInfo.onWall && grabWall && !playerColl.collInfo.onGround && canMove) {
-				characterRigi.velocity = new Vector2(0f, moveY * runSpeed);
+				characterRigi.velocity = new Vector2(0f, moveY * movementSpeed);
 			}
 		}
 		else
 		{
 			// Move the character by finding the target velocity
-			Vector3 targetVelocity = new Vector2(moveX * runSpeed, characterRigi.velocity.y);
+			Vector3 targetVelocity = new Vector2(moveX * movementSpeed, characterRigi.velocity.y);
 
 			// ACCELERATION
 			if (targetVelocity.x != 0) {
