@@ -5147,28 +5147,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cc19a5677a771d47b1b4695faec2dfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  runSpeed: 10
+  movementSpeed: 9
   accelerationTimeAirborne: 0.1
   decelerationTimeAirborne: 0.1
   accelerationTimeGrounded: 0.12
   decelerationTimeGrounded: 0.03
   controllerDeadZone: 0.25
+  _CanWallJump: 1
   maxJumpHeight: 4.5
   minJumpHeight: 1
   timeToJumpApex: 0.25
   fallMultiplier: 11
   wallJumpVertical: {x: 2, y: 10}
-  wallJumpUp: {x: 25, y: 35}
-  wallJumpAway: {x: 30, y: 10}
+  wallJumpUp: {x: 10, y: 35}
+  wallJumpAway: {x: 20, y: 10}
   wallJumpVerticalControlDelay: 0.1
   wallJumpAwayControlDelay: 0.2
-  wallJumpUpControlDelay: 0.2
+  wallJumpUpControlDelay: 0.05
   jumpQueueTimer: 0.15
   coyoteJumpTimer: 0.25
   _CanGrabWall: 0
+  _CanSlideAgainstWall: 1
   slideRate: 2
+  wallGrabMovementSpeed: 5
   wallGrabStaminaMax: 3
-  wallStickTime: 0.1
+  wallStickTime: 0.15
   touchedHazard:
     m_PersistentCalls:
       m_Calls:
@@ -5187,18 +5190,7 @@ MonoBehaviour:
       Culture=neutral, PublicKeyToken=null
   startedRunning:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: 
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   stopMoving:
@@ -5214,7 +5206,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5141612786085762577}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: b925155b4f59b1f4096d15fbbfc199e3, type: 2}
   m_CullingMode: 0
