@@ -75,6 +75,16 @@ public class CharacterController2D : MonoBehaviour
 	#endregion
 
 
+	#region AIMMING 
+	[Header("Aimming")]
+	[SerializeField] private LineRenderer aimingLineRenderer;
+	[SerializeField] private GameObject teleportProjectilePrefab;
+	private GameObject teleportProjectileReference;
+	[SerializeField] private float teleportProjectileMovementSpeed;
+	private Vector2 aimingVector = Vector2.zero;
+	#endregion
+
+
 	#region GAME EVENTS
 	[Header("Game Events")]
 	// Should call DeathFade.StartDeathFadeCoroutine()
@@ -152,12 +162,13 @@ public class CharacterController2D : MonoBehaviour
 		}
 
 		GetJumpInput();
+
+		GetAimInput();
 	}
 
 
 	private void GetMovementInput () {
 		Vector2 movementInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-
 		//if (movementInput.magnitude < controllerDeadZone)
 		//	movementInput = Vector2.zero;
 
@@ -169,6 +180,40 @@ public class CharacterController2D : MonoBehaviour
 	private void GetJumpInput () {
 		jumpInputDown = Input.GetButtonDown("Jump") ? true : false;
 		jumpInputUp = Input.GetButtonUp("Jump") ? true : false;
+	}
+
+
+	private void GetAimInput () {
+		bool aiming = Input.GetAxis("LT") == 0 ? false : true;
+
+		if (aiming && playerColl.collInfo.inAir) {
+			Time.timeScale = 0.01f;
+			Time.fixedDeltaTime = 0.02F * Time.timeScale;
+		}
+		else {
+			Time.timeScale = 1.0f;
+			Time.fixedDeltaTime = 0.02F;
+		}
+
+		if (aiming) {
+			aimingVector = new Vector2(Input.GetAxis("Right Joystick X"), Input.GetAxis("Right Joystick Y"));
+
+			aimingLineRenderer.SetPosition(0, transform.position);
+			aimingLineRenderer.SetPosition(1, ((aimingVector.normalized * 7) + (Vector2)transform.position));
+
+			if (Input.GetAxis("RT") != 0) {
+				Debug.Log("fire");
+				if (teleportProjectileReference == null) {
+					teleportProjectileReference = GameObject.Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity);
+					teleportProjectileReference.GetComponent<MoveInDirection>().direction = aimingVector.normalized;
+					teleportProjectileReference.GetComponent<MoveInDirection>().movementSpeed = teleportProjectileMovementSpeed;
+				}
+			}
+		}
+		else {
+			aimingLineRenderer.SetPosition(0, transform.position);
+			aimingLineRenderer.SetPosition(1, transform.position);
+		}
 	}
 
 

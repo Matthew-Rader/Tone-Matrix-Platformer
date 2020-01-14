@@ -69,6 +69,10 @@ public class Collision : MonoBehaviour
 								  Physics2D.OverlapBox((Vector2)transform.position + aboveOffset, widthOverlapBox, 0.0f, whatIsHazard) ||
 								  Physics2D.OverlapBox((Vector2)transform.position + leftOffset, heightOverlapBox, 0.0f, whatIsHazard) ||
 								  Physics2D.OverlapBox((Vector2)transform.position + rightOffset, heightOverlapBox, 0.0f, whatIsHazard));
+
+		if (!collInfo.onWall && !collInfo.onGround) {
+			collInfo.inAir = true;
+		}
 	}
 
 	void SetOverLapBoxOffsetAndDimension () {
@@ -106,11 +110,13 @@ public class Collision : MonoBehaviour
 		public bool onWallRight;
 		public bool touchedHazard;
 		public float timeLeftGround;
+		public bool inAir;
 
 		public void Reset () {
 			onGround = onWall = false;
 			onWallLeft = onWallRight = false;
 			touchedHazard = false;
+			inAir = false;
 		}
 	}
 }
