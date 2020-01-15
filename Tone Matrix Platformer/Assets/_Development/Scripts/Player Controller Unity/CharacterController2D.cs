@@ -75,13 +75,22 @@ public class CharacterController2D : MonoBehaviour
 	#endregion
 
 
-	#region AIMMING 
-	[Header("Aimming")]
+	#region TELEPORTATION 
+	[Header("Teleportation")]
 	[SerializeField] private LineRenderer aimingLineRenderer;
 	[SerializeField] private GameObject teleportProjectilePrefab;
 	private GameObject teleportProjectileReference;
 	[SerializeField] private float teleportProjectileMovementSpeed;
 	private Vector2 aimingVector = Vector2.zero;
+	private enum ProjectileState { Fire, Teleport };
+	private ProjectileState projectileState = ProjectileState.Fire;
+	private ProjectileState _FIRE = ProjectileState.Fire;
+	private ProjectileState _TELEPORT = ProjectileState.Teleport;
+	private bool hasFired = false;
+	private bool hasTeleported = false;
+
+	[SerializeField] private Vector2 postTeleportVelocity = new Vector2(0.0f, 10.0f);
+	[SerializeField] private Vector2 postFireVelocity = new Vector2(0.0f, 10.0f);
 	#endregion
 
 
@@ -184,9 +193,20 @@ public class CharacterController2D : MonoBehaviour
 
 
 	private void GetAimInput () {
-		bool aiming = Input.GetAxis("LT") == 0 ? false : true;
+		bool _LT = Input.GetAxis("LT") == 0 ? false : true;
+		bool _RT = Input.GetAxis("RT") == 0 ? false : true;
 
-		if (aiming && playerColl.collInfo.inAir) {
+		bool haveProjectileReference = (teleportProjectileReference != null) ? true : false;
+		if (!haveProjectileReference) {
+			hasFired = false;
+			projectileState = _FIRE;
+		}
+		else {
+			hasTeleported = false;
+			projectileState = _TELEPORT;
+		}
+
+		if (_LT && playerColl.collInfo.inAir && hasTeleported) {
 			Time.timeScale = 0.01f;
 			Time.fixedDeltaTime = 0.02F * Time.timeScale;
 		}
@@ -195,24 +215,46 @@ public class CharacterController2D : MonoBehaviour
 			Time.fixedDeltaTime = 0.02F;
 		}
 
-		if (aiming) {
+		if (_LT) {
 			aimingVector = new Vector2(Input.GetAxis("Right Joystick X"), Input.GetAxis("Right Joystick Y"));
 
 			aimingLineRenderer.SetPosition(0, transform.position);
 			aimingLineRenderer.SetPosition(1, ((aimingVector.normalized * 7) + (Vector2)transform.position));
 
-			if (Input.GetAxis("RT") != 0) {
-				Debug.Log("fire");
-				if (teleportProjectileReference == null) {
+			if (_RT) {
+				if (haveProjectileReference && projectileState == _FIRE) {
 					teleportProjectileReference = GameObject.Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity);
 					teleportProjectileReference.GetComponent<MoveInDirection>().direction = aimingVector.normalized;
 					teleportProjectileReference.GetComponent<MoveInDirection>().movementSpeed = teleportProjectileMovementSpeed;
+
+					if (playerColl.collInfo.inAir) {
+						playerVelocity = postFireVelocity;
+					}
+
+					hasFired = true;
 				}
 			}
 		}
 		else {
 			aimingLineRenderer.SetPosition(0, transform.position);
 			aimingLineRenderer.SetPosition(1, transform.position);
+		}
+
+		if (_RT && !haveProjectileReference && projectileState == _TELEPORT) {
+			this.transform.position = teleportProjectileReference.transform.position;
+			playerVelocity = postTeleportVelocity;
+			Destroy(teleportProjectileReference);
+
+			hasTeleported = true;
+		}
+
+		if (!_RT && hasFired) {
+			projectileState = _TELEPORT;
+			hasFired = false;
+		}
+		else if (!_RT && hasTeleported) {
+			projectileState = _FIRE;
+			hasTeleported = false;
 		}
 	}
 
