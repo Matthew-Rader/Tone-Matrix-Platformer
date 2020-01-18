@@ -8,14 +8,22 @@ public class MoveInDirection : MonoBehaviour
 	public Vector2 direction;
 	public float movementSpeed;
 	public bool setLifeSpan = false;
-	public float travelTime;
-	private float currentLifeLength = 0.0f;
+	public float lifeSpawn;
+	private float currentTimeAlive = 0.0f;
 
 
     void Update() {
 		Vector2 objectPosition = transform.position;
 		objectPosition += direction * movementSpeed * Time.deltaTime;
 		transform.position = objectPosition;
+
+		if (setLifeSpan) {
+			currentTimeAlive += Time.deltaTime;
+
+			if (currentTimeAlive >= lifeSpawn) {
+				Destroy(this.gameObject);
+			}
+		}
 	}
 
 	void OnCollision2D (Collision2D col) {

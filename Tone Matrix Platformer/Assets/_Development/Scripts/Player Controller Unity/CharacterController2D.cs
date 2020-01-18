@@ -88,6 +88,7 @@ public class CharacterController2D : MonoBehaviour
 	private ProjectileState _TELEPORT = ProjectileState.Teleport;
 	private bool hasFired = false;
 	private bool hasTeleported = false;
+	private bool applyPostTeleportAirSlowmo = false;
 
 	[SerializeField] private Vector2 postTeleportVelocity = new Vector2(0.0f, 10.0f);
 	[SerializeField] private Vector2 postFireVelocity = new Vector2(0.0f, 10.0f);
@@ -197,55 +198,66 @@ public class CharacterController2D : MonoBehaviour
 		bool _RT = Input.GetAxis("RT") == 0 ? false : true;
 
 		bool haveProjectileReference = (teleportProjectileReference != null) ? true : false;
-		if (!haveProjectileReference) {
-			hasFired = false;
-			projectileState = _FIRE;
-		}
-		else {
-			hasTeleported = false;
-			projectileState = _TELEPORT;
-		}
+		//if (!haveProjectileReference) {
+		//	hasFired = false;
+		//	projectileState = _FIRE;
+		//}
+		//else {
+		//	hasTeleported = false;
+		//	projectileState = _TELEPORT;
+		//}
 
-		if (_LT && playerColl.collInfo.inAir && hasTeleported) {
-			Time.timeScale = 0.01f;
-			Time.fixedDeltaTime = 0.02F * Time.timeScale;
-		}
-		else {
-			Time.timeScale = 1.0f;
-			Time.fixedDeltaTime = 0.02F;
-		}
+		bool isAiming = false;
 
-		if (_LT) {
+		// Determine if the player can aim ----------------------------------------------
+		if (_LT && !haveProjectileReference) {
 			aimingVector = new Vector2(Input.GetAxis("Right Joystick X"), Input.GetAxis("Right Joystick Y"));
 
 			aimingLineRenderer.SetPosition(0, transform.position);
 			aimingLineRenderer.SetPosition(1, ((aimingVector.normalized * 7) + (Vector2)transform.position));
-
-			if (_RT) {
-				if (haveProjectileReference && projectileState == _FIRE) {
-					teleportProjectileReference = GameObject.Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity);
-					teleportProjectileReference.GetComponent<MoveInDirection>().direction = aimingVector.normalized;
-					teleportProjectileReference.GetComponent<MoveInDirection>().movementSpeed = teleportProjectileMovementSpeed;
-
-					if (playerColl.collInfo.inAir) {
-						playerVelocity = postFireVelocity;
-					}
-
-					hasFired = true;
-				}
-			}
+			isAiming = true;
 		}
 		else {
 			aimingLineRenderer.SetPosition(0, transform.position);
 			aimingLineRenderer.SetPosition(1, transform.position);
 		}
 
-		if (_RT && !haveProjectileReference && projectileState == _TELEPORT) {
+		// Determine if we should apply slowmo ------------------------------------------
+		if (!playerColl.collInfo.inAir) {
+			applyPostTeleportAirSlowmo = false;
+		}
+
+		if (_LT && playerColl.collInfo.inAir && applyPostTeleportAirSlowmo) {
+			Time.timeScale = 0.01f;
+			Time.fixedDeltaTime = 0.02F * Time.timeScale;
+		}
+		else {
+			Debug.Log(_LT + " " + playerColl.collInfo.inAir + " " + applyPostTeleportAirSlowmo);
+			Time.timeScale = 1.0f;
+			Time.fixedDeltaTime = 0.02F;
+		}
+
+		// Determine if we should shoot the projectile or teleport ----------------------
+		if (_RT && isAiming && !haveProjectileReference && projectileState == _FIRE) {
+			teleportProjectileReference = GameObject.Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity);
+			teleportProjectileReference.GetComponent<MoveInDirection>().direction = aimingVector.normalized;
+			teleportProjectileReference.GetComponent<MoveInDirection>().movementSpeed = teleportProjectileMovementSpeed;
+			teleportProjectileReference.GetComponent<MoveInDirection>().setLifeSpan = true;
+			teleportProjectileReference.GetComponent<MoveInDirection>().lifeSpawn = 5.0f;
+
+			if (playerColl.collInfo.inAir) {
+				playerVelocity = postFireVelocity;
+			}
+
+			hasFired = true;
+		}
+		else if (_RT && haveProjectileReference && projectileState == _TELEPORT) {
 			this.transform.position = teleportProjectileReference.transform.position;
 			playerVelocity = postTeleportVelocity;
 			Destroy(teleportProjectileReference);
 
 			hasTeleported = true;
+			applyPostTeleportAirSlowmo = true;
 		}
 
 		if (!_RT && hasFired) {
