@@ -31,6 +31,6 @@ public class MoveInDirection : MonoBehaviour
 	}
 
 	void OnBecameInvisible () {
-		Destroy(this);
+		Destroy(this.gameObject);
 	}
 }

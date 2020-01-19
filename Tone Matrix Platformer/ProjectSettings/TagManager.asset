@@ -21,7 +21,7 @@ TagManager:
   - NoteBlock_Disabled
   - Hazard
   - Player
-  - 
+  - Teleportation Projectile
   - 
   - 
   - 
@@ -60,4 +60,10 @@ TagManager:
     locked: 0
   - name: Hazard
     uniqueID: 713974571
+    locked: 0
+  - name: Aim Line
+    uniqueID: 2085856793
+    locked: 0
+  - name: Teleportation Projectile
+    uniqueID: 2159678223
     locked: 0

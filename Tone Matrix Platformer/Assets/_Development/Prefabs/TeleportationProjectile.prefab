@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 223306605341311564}
   - component: {fileID: 223306605341311565}
   - component: {fileID: -7435554433278243186}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: TeleportationProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -67,7 +67,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -1022307531
+  m_SortingLayerID: -2135289073
   m_SortingLayer: 8
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ee6b20f9a14b45e4d982cd64694d63fc, type: 3}
@@ -95,3 +95,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   direction: {x: 0, y: 0}
   movementSpeed: 0
+  setLifeSpan: 0
+  lifeSpawn: 0

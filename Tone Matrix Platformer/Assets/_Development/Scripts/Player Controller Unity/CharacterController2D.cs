@@ -81,6 +81,7 @@ public class CharacterController2D : MonoBehaviour
 	[SerializeField] private GameObject teleportProjectilePrefab;
 	private GameObject teleportProjectileReference;
 	[SerializeField] private float teleportProjectileMovementSpeed;
+	[SerializeField] private float slowmoLength = 0.3f;
 	private Vector2 aimingVector = Vector2.zero;
 	private enum ProjectileState { Fire, Teleport };
 	private ProjectileState projectileState = ProjectileState.Fire;
@@ -89,7 +90,9 @@ public class CharacterController2D : MonoBehaviour
 	private bool hasFired = false;
 	private bool hasTeleported = false;
 	private bool applyPostTeleportAirSlowmo = false;
-
+	private bool canApplySlowMo = false;
+	private bool slowmoInEffect = false;
+	private Coroutine slowmoEffectCoroutine;
 	[SerializeField] private Vector2 postTeleportVelocity = new Vector2(0.0f, 10.0f);
 	[SerializeField] private Vector2 postFireVelocity = new Vector2(0.0f, 10.0f);
 	#endregion
@@ -198,14 +201,10 @@ public class CharacterController2D : MonoBehaviour
 		bool _RT = Input.GetAxis("RT") == 0 ? false : true;
 
 		bool haveProjectileReference = (teleportProjectileReference != null) ? true : false;
-		//if (!haveProjectileReference) {
-		//	hasFired = false;
-		//	projectileState = _FIRE;
-		//}
-		//else {
-		//	hasTeleported = false;
-		//	projectileState = _TELEPORT;
-		//}
+		if (!haveProjectileReference) {
+			hasFired = false;
+			projectileState = _FIRE;
+		}
 
 		bool isAiming = false;
 
@@ -213,9 +212,11 @@ public class CharacterController2D : MonoBehaviour
 		if (_LT && !haveProjectileReference) {
 			aimingVector = new Vector2(Input.GetAxis("Right Joystick X"), Input.GetAxis("Right Joystick Y"));
 
-			aimingLineRenderer.SetPosition(0, transform.position);
-			aimingLineRenderer.SetPosition(1, ((aimingVector.normalized * 7) + (Vector2)transform.position));
-			isAiming = true;
+			if (aimingVector != Vector2.zero) {
+				aimingLineRenderer.SetPosition(0, transform.position);
+				aimingLineRenderer.SetPosition(1, ((aimingVector.normalized * 7) + (Vector2)transform.position));
+				isAiming = true;
+			}
 		}
 		else {
 			aimingLineRenderer.SetPosition(0, transform.position);
@@ -223,16 +224,20 @@ public class CharacterController2D : MonoBehaviour
 		}
 
 		// Determine if we should apply slowmo ------------------------------------------
-		if (!playerColl.collInfo.inAir) {
-			applyPostTeleportAirSlowmo = false;
+		// If the player is on the ground the reset the canApplySlowMo effect
+		if (playerColl.collInfo.onGround) {
+			canApplySlowMo = true;
 		}
-
-		if (_LT && playerColl.collInfo.inAir && applyPostTeleportAirSlowmo) {
-			Time.timeScale = 0.01f;
-			Time.fixedDeltaTime = 0.02F * Time.timeScale;
+		
+		if (_LT && playerColl.collInfo.inAir && canApplySlowMo) {
+			// Time.timeScale = 0.01f;
+			// Time.fixedDeltaTime = 0.02F * Time.timeScale;
+			slowmoEffectCoroutine = StartCoroutine(SlowMotionEffect());
 		}
-		else {
-			Debug.Log(_LT + " " + playerColl.collInfo.inAir + " " + applyPostTeleportAirSlowmo);
+		else if (!_LT) {
+			if (slowmoInEffect) {
+				StopCoroutine(slowmoEffectCoroutine);
+			}
 			Time.timeScale = 1.0f;
 			Time.fixedDeltaTime = 0.02F;
 		}
@@ -257,9 +262,10 @@ public class CharacterController2D : MonoBehaviour
 			Destroy(teleportProjectileReference);
 
 			hasTeleported = true;
-			applyPostTeleportAirSlowmo = true;
+			canApplySlowMo = true;
 		}
 
+		// Look for when the Right Trigger has been lifted
 		if (!_RT && hasFired) {
 			projectileState = _TELEPORT;
 			hasFired = false;
@@ -515,4 +521,27 @@ public class CharacterController2D : MonoBehaviour
 		characterRigi.velocity = Vector2.zero;
 		playerVelocity = Vector2.zero;
 	}
+
+	IEnumerator SlowMotionEffect() {
+		canApplySlowMo = false;
+		slowmoInEffect = true;
+		Time.timeScale = 0.01f;
+		Time.fixedDeltaTime = 0.02F * Time.timeScale;
+
+		float t = 0.0f;
+		float counter = 0.0f;
+
+		while (counter < slowmoLength) {
+			t += Time.deltaTime / slowmoLength;
+			counter += Time.deltaTime;
+
+			Time.timeScale = Mathf.Lerp(0.01f, 1.0f, t);
+			Time.fixedDeltaTime = 0.02F * Time.timeScale;
+
+			yield return null;
+		}
+
+		slowmoInEffect = false;
+	}
+
 }
