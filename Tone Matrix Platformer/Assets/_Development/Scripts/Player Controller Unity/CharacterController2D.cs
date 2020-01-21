@@ -12,6 +12,7 @@ public class CharacterController2D : MonoBehaviour
 	private Rigidbody2D characterRigi;
 	private Animator animator;
 	private bool alive = true;
+	private Color _DefaultCharacterColor = new Color(76/255.0f, 154/255.0f, 86/255.0f);
 
 
 	#region  MOVEMENT VARIABLES
@@ -93,6 +94,8 @@ public class CharacterController2D : MonoBehaviour
 	private bool canApplySlowMo = false;
 	private bool slowmoInEffect = false;
 	private Coroutine slowmoEffectCoroutine;
+	private Coroutine playerFlashEffect;
+	private bool playerWaitingToTeleport = false;
 	[SerializeField] private Vector2 postTeleportVelocity = new Vector2(0.0f, 10.0f);
 	[SerializeField] private Vector2 postFireVelocity = new Vector2(0.0f, 10.0f);
 	#endregion
@@ -143,6 +146,13 @@ public class CharacterController2D : MonoBehaviour
 
 		if (playerColl.collInfo.touchedHazard) {
 			alive = false;
+
+			if (slowmoInEffect) {
+				StopCoroutine(slowmoEffectCoroutine);
+				Time.timeScale = 1.0f;
+				Time.fixedDeltaTime = 0.02F;
+			}
+
 			touchedHazard.Invoke();
 		}
 
@@ -201,9 +211,20 @@ public class CharacterController2D : MonoBehaviour
 		bool _RT = Input.GetAxis("RT") == 0 ? false : true;
 
 		bool haveProjectileReference = (teleportProjectileReference != null) ? true : false;
-		if (!haveProjectileReference) {
+		if (!haveProjectileReference && !hasTeleported) {
 			hasFired = false;
+			hasTeleported = false;
 			projectileState = _FIRE;
+			playerWaitingToTeleport = false;
+			canMove = true;
+
+			if (playerFlashEffect != null) {
+				StopCoroutine(playerFlashEffect);
+				
+				if (gameObject.GetComponent<SpriteRenderer>().color != _DefaultCharacterColor) {
+					gameObject.GetComponent<SpriteRenderer>().color = _DefaultCharacterColor;
+				}
+			}
 		}
 
 		bool isAiming = false;
@@ -230,16 +251,10 @@ public class CharacterController2D : MonoBehaviour
 		}
 		
 		if (_LT && playerColl.collInfo.inAir && canApplySlowMo) {
-			// Time.timeScale = 0.01f;
-			// Time.fixedDeltaTime = 0.02F * Time.timeScale;
 			slowmoEffectCoroutine = StartCoroutine(SlowMotionEffect());
 		}
 		else if (!_LT) {
-			if (slowmoInEffect) {
-				StopCoroutine(slowmoEffectCoroutine);
-			}
-			Time.timeScale = 1.0f;
-			Time.fixedDeltaTime = 0.02F;
+			ResetTimeScale();
 		}
 
 		// Determine if we should shoot the projectile or teleport ----------------------
@@ -251,9 +266,13 @@ public class CharacterController2D : MonoBehaviour
 			teleportProjectileReference.GetComponent<MoveInDirection>().lifeSpawn = 5.0f;
 
 			if (playerColl.collInfo.inAir) {
-				playerVelocity = postFireVelocity;
+				playerVelocity = Vector2.zero;
 			}
 
+			ResetTimeScale();
+			canMove = false;
+			playerFlashEffect = StartCoroutine(PlayerFlash());
+			playerWaitingToTeleport = true;
 			hasFired = true;
 		}
 		else if (_RT && haveProjectileReference && projectileState == _TELEPORT) {
@@ -261,8 +280,17 @@ public class CharacterController2D : MonoBehaviour
 			playerVelocity = postTeleportVelocity;
 			Destroy(teleportProjectileReference);
 
+			canMove = true;
 			hasTeleported = true;
 			canApplySlowMo = true;
+			playerWaitingToTeleport = false;
+
+			if (playerFlashEffect != null) {
+				StopCoroutine(playerFlashEffect);
+				if (gameObject.GetComponent<SpriteRenderer>().color != _DefaultCharacterColor) {
+					gameObject.GetComponent<SpriteRenderer>().color = _DefaultCharacterColor;
+				}
+			}
 		}
 
 		// Look for when the Right Trigger has been lifted
@@ -276,6 +304,13 @@ public class CharacterController2D : MonoBehaviour
 		}
 	}
 
+	private void ResetTimeScale() {
+		if (slowmoInEffect) {
+			StopCoroutine(slowmoEffectCoroutine);
+		}
+		Time.timeScale = 1.0f;
+		Time.fixedDeltaTime = 0.02F;
+	}
 
 	private void HandleWallGrab () {
 		if (_CanGrabWall) {
@@ -411,7 +446,10 @@ public class CharacterController2D : MonoBehaviour
 
 
 	private void ApplyGravityScale () {
-		if (playerVelocity.y < 0) {
+		if (playerWaitingToTeleport) {
+			characterRigi.gravityScale = 0.2f;
+		}
+		else if (playerVelocity.y < 0) {
 			characterRigi.gravityScale = fallMultiplier;
 			applyWallSlide = true;
 		}
@@ -544,4 +582,33 @@ public class CharacterController2D : MonoBehaviour
 		slowmoInEffect = false;
 	}
 
+
+	IEnumerator PlayerFlash() {
+		#region Visual Fade / Flash Despawn Phase
+		float t = 0.0f;
+		float flashRate = 0.1f;
+		float flashCounter = 0.0f;
+		bool applyFlashColor = true;
+		SpriteRenderer playerSR = gameObject.GetComponent<SpriteRenderer>();
+
+		while (true) {
+			flashCounter += Time.deltaTime;
+
+			if (flashCounter >= flashRate) {
+				flashCounter = 0.0f;
+				
+				if (applyFlashColor) {
+					playerSR.color = Color.white;
+					applyFlashColor = false;
+				}
+				else {
+					playerSR.color = _DefaultCharacterColor;
+					applyFlashColor = true;
+				}
+			}
+
+			yield return null;
+		}
+		#endregion
+	}
 }

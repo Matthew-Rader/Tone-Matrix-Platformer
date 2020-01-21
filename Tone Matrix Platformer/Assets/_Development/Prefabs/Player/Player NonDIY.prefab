@@ -5175,8 +5175,9 @@ MonoBehaviour:
   aimingLineRenderer: {fileID: 121410132528003345}
   teleportProjectilePrefab: {fileID: 223306605341311571, guid: 2f1947841d837f149a2610286792f5bc,
     type: 3}
-  teleportProjectileMovementSpeed: 45
-  postTeleportVelocity: {x: 0, y: 10}
+  teleportProjectileMovementSpeed: 30
+  slowmoLength: 1.5
+  postTeleportVelocity: {x: 0, y: 12}
   postFireVelocity: {x: 0, y: 10}
   touchedHazard:
     m_PersistentCalls:
@@ -5359,7 +5360,7 @@ LineRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 1755354251
+  m_SortingLayerID: 2085856793
   m_SortingLayer: 7
   m_SortingOrder: 0
   m_Positions:
