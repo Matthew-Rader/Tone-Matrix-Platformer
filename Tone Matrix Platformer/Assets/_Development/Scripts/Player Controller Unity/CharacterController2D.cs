@@ -173,6 +173,17 @@ public class CharacterController2D : MonoBehaviour
 			}
 		}
 
+		// Press B
+		if (Input.GetButtonDown("Fire2") && teleportProjectileReference) {
+			teleportProjectileReference.GetComponent<MoveInDirection>().direction *= -1;
+		}
+
+		// Press X
+		if (Input.GetButtonDown("Fire3") && playerColl.collInfo.onGround == false && Input.GetAxisRaw("Vertical") < 0) {
+			float stompVelocity = Mathf.Abs(playerVelocity.y) * -10f;
+			playerVelocity = new Vector2(playerVelocity.x, stompVelocity);
+			Time.timeScale = 1;
+		}
 		characterRigi.velocity = playerVelocity;
 
 		HandlePlayerVisuals();
